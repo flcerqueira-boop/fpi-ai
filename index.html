@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPI-AI — Analisador Fotográfico do Foot Posture Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #111827;
+    --surface2: #1a2332;
+    --border: #1e2d42;
+    --accent: #00d4aa;
+    --accent2: #0ea5e9;
+    --accent3: #f59e0b;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warn: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: #000;
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .header-text p {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 2px;
+  }
+
+  .badge {
+    margin-left: auto;
+    padding: 5px 12px;
+    background: rgba(0,212,170,0.1);
+    border: 1px solid rgba(0,212,170,0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* API KEY SECTION */
+  .api-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .api-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .input-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  input[type="password"], input[type="text"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+  }
+
+  .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .api-note {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .api-note a {
+    color: var(--accent2);
+    text-decoration: none;
+  }
+
+  /* UPLOAD SECTION */
+  .upload-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 640px) {
+    .upload-grid { grid-template-columns: 1fr; }
+  }
+
+  .upload-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .upload-card:hover {
+    border-color: rgba(0,212,170,0.3);
+  }
+
+  .upload-card-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .upload-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .upload-card-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .upload-items {
+    padding: 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .upload-item {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .upload-item::before {
+    content: '→';
+    color: var(--accent);
+    font-size: 10px;
+  }
+
+  .upload-zone {
+    margin: 12px 16px 16px;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,212,170,0.04);
+  }
+
+  .upload-zone input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .upload-text {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .upload-preview {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: none;
+  }
+
+  .upload-preview.visible {
+    display: block;
+  }
+
+  .upload-zone.has-image .upload-placeholder {
+    display: none;
+  }
+
+  /* PATIENT INFO */
+  .patient-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  select:focus { border-color: var(--accent); }
+
+  /* ANALYZE BUTTON */
+  .analyze-wrap {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .btn-analyze {
+    padding: 16px 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-analyze:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,212,170,0.3);
+  }
+
+  .btn-analyze:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* LOADING */
+  .loading-wrap {
+    display: none;
+    text-align: center;
+    padding: 48px;
+  }
+
+  .loading-wrap.visible { display: block; }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* RESULTS */
+  .results-section {
+    display: none;
+  }
+
+  .results-section.visible { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+
+  .results-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .score-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .score-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .score-classification {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .class-supinado { background: rgba(14,165,233,0.15); color: var(--accent2); border: 1px solid rgba(14,165,233,0.3); }
+  .class-neutro { background: rgba(0,212,170,0.15); color: var(--accent); border: 1px solid rgba(0,212,170,0.3); }
+  .class-pronado-leve { background: rgba(245,158,11,0.15); color: var(--accent3); border: 1px solid rgba(245,158,11,0.3); }
+  .class-pronado { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* ITEMS GRID */
+  .items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 640px) {
+    .items-grid { grid-template-columns: 1fr; }
+  }
+
+  .item-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .item-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+
+  .item-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .item-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .item-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .item-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+  }
+
+  .score-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .dot.active-neg { background: var(--accent2); }
+  .dot.active-zero { background: var(--text-muted); }
+  .dot.active-pos { background: var(--accent); }
+  .dot.active-high { background: var(--warn); }
+  .dot.active-max { background: var(--danger); }
+
+  .item-justification {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+
+  /* SCORE BAR */
+  .total-score-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .bar-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 1s ease;
+  }
+
+  .bar-markers {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    position: relative;
+  }
+
+  /* CLINICAL NOTES */
+  .clinical-notes {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .notes-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* DISCLAIMER */
+  .disclaimer {
+    background: rgba(245,158,11,0.07);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: var(--warn);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  /* PRINT BUTTON */
+  .actions-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+
+  /* Error */
+  .error-box {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--danger);
+    display: none;
+    margin-bottom: 16px;
+  }
+
+  .error-box.visible { display: block; }
+
+  @media print {
+    body { background: white; color: black; }
+    .api-section, .upload-grid, .patient-section, .analyze-wrap, .actions-row { display: none; }
+    .results-section { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo-mark">FPI</div>
+      <div class="header-text">
+        <h1>FPI-AI — Foot Posture Index Fotográfico</h1>
+        <p>Análise automatizada por visão computacional via Gemini AI</p>
+      </div>
+      <span class="badge">Protótipo IC</span>
+    </div>
+  </header>
+
+  <!-- API KEY -->
+  <div class="api-section">
+    <div class="section-label">Configuração da API</div>
+    <div class="api-row">
+      <div class="input-wrap">
+        <input type="password" id="apiKey" placeholder="Cole sua Gemini API Key aqui..." />
+      </div>
+      <button class="btn btn-ghost" onclick="toggleApiKey()">Mostrar</button>
+    </div>
+    <p class="api-note">
+      Obtenha sua chave gratuita em <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> — sem custo para uso em pesquisa.
+    </p>
+  </div>
+
+  <!-- PATIENT INFO -->
+  <div class="patient-section">
+    <div class="section-label">Dados do Paciente</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome / Código</label>
+        <input type="text" id="patientName" placeholder="Ex: Paciente 001" />
+      </div>
+      <div class="form-group">
+        <label>Pé avaliado</label>
+        <select id="footSide">
+          <option value="direito">Pé Direito</option>
+          <option value="esquerdo">Pé Esquerdo</option>
+          <option value="bilateral">Bilateral</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Avaliador</label>
+        <input type="text" id="evaluator" placeholder="Nome do avaliador" />
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD PHOTOS -->
+  <div class="section-label" style="margin-bottom:16px;">Fotografias do Pé</div>
+  <div class="upload-grid">
+
+    <div class="upload-card">
+      <div class="upload-card-header">
+        <div class="upload-card-title">📸 Foto 1 — Vista Posterior</div>
+        <div class="upload-card-desc">Câmera na altura do calcâneo, 50-80cm de distância</div>
+      </div>
+      <div class="upload-items">
+        <span class="upload-item">Linha média do calcâneo marcada</span>
+        <span class="upload-item">Ponto médio do tendão de Aquiles</span>
+      </div>
+      <div class="upload-zone" id="zone1">
+        <input type="file" accept="image/*" onchange="handleFile(this, 'preview1', 'img1')" />
+        <div class="upload-placeholder">
+          <span class="upload-icon">⬆</span>
+          <div class="upload-text">Clique ou arraste a foto</div>
+        </div>
+        <img class="upload-preview" id="preview1" />
+      </div>
+    </div>
+
+    <div class="upload-card">
+      <div class="upload-card-header">
+        <div class="upload-card-title">📸 Foto 2 — Vista Medial</div>
+        <div class="upload-card-desc">Câmera na altura do arco, paralela ao solo</div>
+      </div>
+      <div class="upload-items">
+        <span class="upload-item">Cabeça do 1º metatarso marcada</span>
+        <span class="upload-item">Tuberosidade do calcâneo</span>
+        <span class="upload-item">Navicular marcado</span>
+      </div>
+      <div class="upload-zone" id="zone2">
+        <input type="file" accept="image/*" onchange="handleFile(this, 'preview2', 'img2')" />
+        <div class="upload-placeholder">
+          <span class="upload-icon">⬆</span>
+          <div class="upload-text">Clique ou arraste a foto</div>
+        </div>
+        <img class="upload-preview" id="preview2" />
+      </div>
+    </div>
+
+    <div class="upload-card">
+      <div class="upload-card-header">
+        <div class="upload-card-title">📸 Foto 3 — Posterior Alta</div>
+        <div class="upload-card-desc">Câmera na altura dos maléolos, 80-100cm</div>
+      </div>
+      <div class="upload-items">
+        <span class="upload-item">Maléolos marcados bilateralmente</span>
+        <span class="upload-item">Linha média da perna</span>
+      </div>
+      <div class="upload-zone" id="zone3">
+        <input type="file" accept="image/*" onchange="handleFile(this, 'preview3', 'img3')" />
+        <div class="upload-placeholder">
+          <span class="upload-icon">⬆</span>
+          <div class="upload-text">Clique ou arraste a foto</div>
+        </div>
+        <img class="upload-preview" id="preview3" />
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ANALYZE BUTTON -->
+  <div class="analyze-wrap">
+    <div class="error-box" id="errorBox"></div>
+    <button class="btn-analyze" onclick="analyze()" id="analyzeBtn">
+      Analisar com IA →
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-wrap" id="loadingWrap">
+    <div class="spinner"></div>
+    <div class="loading-text">Analisando imagens com Gemini Vision...</div>
+    <div class="loading-text" style="margin-top:6px;font-size:12px;color:var(--text-muted)">Isso pode levar alguns segundos</div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="resultsSection">
+    <div class="results-header">
+      <div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;font-family:'Syne',sans-serif;letter-spacing:1px;text-transform:uppercase;">Resultado — FPI-6 Fotográfico</div>
+        <div class="results-title" id="resultPatient">—</div>
+      </div>
+      <div class="score-badge">
+        <div>
+          <div class="score-value" id="totalScore">—</div>
+          <div class="score-label">Score Total</div>
+        </div>
+        <div class="score-classification" id="scoreClass">—</div>
+      </div>
+    </div>
+
+    <!-- SCORE BAR -->
+    <div class="total-score-bar">
+      <div class="bar-label-row">
+        <span>Supinado alto (-12)</span>
+        <span>Neutro (0 a +5)</span>
+        <span>Pronado alto (+12)</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" id="barFill" style="width:50%"></div>
+      </div>
+      <div class="bar-markers">
+        <span>-12</span>
+        <span>-7</span>
+        <span>-1</span>
+        <span>+1</span>
+        <span>+5</span>
+        <span>+9</span>
+        <span>+12</span>
+      </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="section-label" style="margin-bottom:16px;">Análise por Item</div>
+    <div class="items-grid" id="itemsGrid"></div>
+
+    <!-- CLINICAL NOTES -->
+    <div class="clinical-notes">
+      <div class="section-label" style="margin-bottom:12px;">Observações Clínicas da IA</div>
+      <div class="notes-text" id="clinicalNotes">—</div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠️ <strong>Instrumento de pesquisa — Protótipo IC.</strong> Esta versão fotográfica avalia 5 dos 6 itens do FPI-6 original (item 1 — palpação do tálus — não é avaliável por imagem). Os resultados devem ser interpretados por fisioterapeuta habilitado e não substituem a avaliação clínica completa.
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" onclick="window.print()">Imprimir Relatório</button>
+      <button class="btn btn-ghost" onclick="resetApp()">Nova Avaliação</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const images = { img1: null, img2: null, img3: null };
+
+  function toggleApiKey() {
+    const input = document.getElementById('apiKey');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  function handleFile(input, previewId, imgKey) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const preview = document.getElementById(previewId);
+      preview.src = e.target.result;
+      preview.classList.add('visible');
+      // Store base64 without prefix
+      images[imgKey] = e.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.add('visible');
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  async function analyze() {
+    hideError();
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) { showError('Por favor, insira sua Gemini API Key.'); return; }
+    if (!images.img1 && !images.img2 && !images.img3) {
+      showError('Adicione pelo menos uma foto para análise.'); return;
+    }
+
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('loadingWrap').classList.add('visible');
+    document.getElementById('resultsSection').classList.remove('visible');
+
+    try {
+      const parts = [{ text: buildPrompt() }];
+      if (images.img1) parts.push({ inline_data: { mime_type: 'image/jpeg', data: images.img1 } });
+      if (images.img2) parts.push({ inline_data: { mime_type: 'image/jpeg', data: images.img2 } });
+      if (images.img3) parts.push({ inline_data: { mime_type: 'image/jpeg', data: images.img3 } });
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts }] })
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'Erro na API do Gemini');
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('Resposta vazia da API.');
+
+      const result = parseResult(text);
+      renderResults(result);
+
+    } catch (err) {
+      showError('Erro: ' + err.message);
+    } finally {
+      document.getElementById('analyzeBtn').disabled = false;
+      document.getElementById('loadingWrap').classList.remove('visible');
+    }
+  }
+
+  function buildPrompt() {
+    const foot = document.getElementById('footSide').value;
+    return `Você é um fisioterapeuta especialista em avaliação postural do pé, com profundo conhecimento do Foot Posture Index (FPI-6).
+
+Analise as fotografias do pé ${foot} fornecidas e realize a avaliação fotográfica dos itens observacionais do FPI-6.
+
+IMPORTANTE: O item 1 (palpação da cabeça do tálus) NÃO pode ser avaliado por imagem. Pontue-o como 0 e informe isso na justificativa.
+
+Para cada item, atribua uma pontuação de -2 a +2 seguindo o protocolo oficial:
+- Escores negativos = características de supinação
+- Escore 0 = posição neutra
+- Escores positivos = características de pronação
+
+ITENS A AVALIAR:
+Item 1 - Palpação da cabeça do tálus: PONTUE ZERO (não avaliável por foto)
+Item 2 - Curvaturas supra e infra-maleolares laterais: observe a concavidade acima e abaixo do maléolo lateral na vista posterior
+Item 3 - Posição do calcâneo no plano frontal: observe o ângulo de valgo/varo na linha média marcada, vista posterior
+Item 4 - Proeminência da região talonavicular: observe na vista medial se há abaulamento ou depressão
+Item 5 - Congruência do arco longitudinal medial: avalie altura e curvatura na vista medial com os pontos marcados
+Item 6 - Abdução/adução do antepé em relação ao retropé: vista posterior, quantidade de antepé visível
+
+Responda SOMENTE em formato JSON válido, sem markdown, sem texto antes ou depois:
+{
+  "items": [
+    {"id": 1, "nome": "Palpação da cabeça do tálus", "score": 0, "justificativa": "Item não avaliável por fotografia — requer palpação manual."},
+    {"id": 2, "nome": "Curvaturas supra/infra-maleolares", "score": NUMERO, "justificativa": "TEXTO"},
+    {"id": 3, "nome": "Posição do calcâneo (plano frontal)", "score": NUMERO, "justificativa": "TEXTO"},
+    {"id": 4, "nome": "Proeminência talonavicular", "score": NUMERO, "justificativa": "TEXTO"},
+    {"id": 5, "nome": "Arco longitudinal medial", "score": NUMERO, "justificativa": "TEXTO"},
+    {"id": 6, "nome": "Abdução/adução do antepé", "score": NUMERO, "justificativa": "TEXTO"}
+  ],
+  "total": NUMERO_TOTAL,
+  "classificacao": "TEXTO (ex: Pronado leve, Neutro, Supinado)",
+  "observacoes_clinicas": "TEXTO com observações relevantes para o fisioterapeuta"
+}`;
+  }
+
+  function parseResult(text) {
+    try {
+      const clean = text.replace(/```json|```/g, '').trim();
+      return JSON.parse(clean);
+    } catch (e) {
+      // Try extracting JSON from text
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) return JSON.parse(match[0]);
+      throw new Error('Não foi possível interpretar a resposta da IA. Tente novamente.');
+    }
+  }
+
+  function renderResults(data) {
+    // Patient header
+    const name = document.getElementById('patientName').value || 'Sem identificação';
+    const foot = document.getElementById('footSide').value;
+    document.getElementById('resultPatient').textContent = `${name} — Pé ${foot}`;
+
+    // Score
+    const total = data.total ?? 0;
+    document.getElementById('totalScore').textContent = total >= 0 ? `+${total}` : `${total}`;
+
+    // Classification
+    const classEl = document.getElementById('scoreClass');
+    classEl.textContent = data.classificacao || getClassification(total);
+    classEl.className = 'score-classification ' + getClassCSS(total);
+
+    // Bar
+    const pct = ((total + 12) / 24) * 100;
+    document.getElementById('barFill').style.width = `${Math.max(2, Math.min(98, pct))}%`;
+
+    // Items
+    const grid = document.getElementById('itemsGrid');
+    grid.innerHTML = '';
+    (data.items || []).forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <div class="item-number">Item ${item.id}</div>
+        <div class="item-name">${item.nome}</div>
+        <div class="item-score-row">
+          <div class="item-score" style="color:${getScoreColor(item.score)}">${item.score >= 0 ? '+' : ''}${item.score}</div>
+          <div class="score-dots">${buildDots(item.score)}</div>
+        </div>
+        <div class="item-justification">${item.justificativa}</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Clinical notes
+    document.getElementById('clinicalNotes').textContent = data.observacoes_clinicas || '—';
+
+    document.getElementById('resultsSection').classList.add('visible');
+    document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function buildDots(score) {
+    // 5 dots for -2 to +2
+    const labels = ['active-neg','active-neg','active-zero','active-pos','active-high'];
+    const positions = [-2, -1, 0, 1, 2];
+    return positions.map((v, i) => {
+      const cls = v === score ? (score < 0 ? 'active-neg' : score === 0 ? 'active-zero' : score === 1 ? 'active-pos' : 'active-max') : '';
+      return `<div class="dot ${v === score ? cls : ''}"></div>`;
+    }).join('');
+  }
+
+  function getScoreColor(score) {
+    if (score <= -1) return 'var(--accent2)';
+    if (score === 0) return 'var(--text-muted)';
+    if (score === 1) return 'var(--accent)';
+    return 'var(--warn)';
+  }
+
+  function getClassification(total) {
+    if (total <= -7) return 'Supinado acentuado';
+    if (total <= -1) return 'Supinado';
+    if (total <= 5) return 'Neutro';
+    if (total <= 9) return 'Pronado';
+    return 'Pronado acentuado';
+  }
+
+  function getClassCSS(total) {
+    if (total <= -1) return 'class-supinado';
+    if (total <= 5) return 'class-neutro';
+    if (total <= 9) return 'class-pronado-leve';
+    return 'class-pronado';
+  }
+
+  function resetApp() {
+    images.img1 = images.img2 = images.img3 = null;
+    ['preview1','preview2','preview3'].forEach(id => {
+      const el = document.getElementById(id);
+      el.src = '';
+      el.classList.remove('visible');
+    });
+    document.getElementById('patientName').value = '';
+    document.getElementById('resultsSection').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
