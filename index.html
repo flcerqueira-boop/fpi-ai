@@ -687,11 +687,16 @@
     <div class="section-label">Configuração da API</div>
     <div class="api-row">
       <div class="input-wrap">
-        <input type="password" id="apiKey" placeholder="Cole sua Gemini API Key aqui..." />
+        <input type="password" id="apiKey" placeholder="Cole sua Gemini API Key aqui..." oninput="onApiKeyInput()" />
       </div>
       <button class="btn btn-ghost" onclick="toggleApiKey()">Mostrar</button>
     </div>
-    <p class="api-note">
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+      <input type="checkbox" id="rememberKey" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" onchange="toggleRemember()" />
+      <label for="rememberKey" style="font-size:13px;color:var(--text-muted);cursor:pointer;">Lembrar minha chave neste dispositivo</label>
+      <button id="clearKeyBtn" onclick="clearSavedKey()" style="display:none;margin-left:auto;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text-muted);cursor:pointer;">Esquecer chave</button>
+    </div>
+    <p class="api-note" style="margin-top:8px;">
       Obtenha sua chave gratuita em <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> — sem custo para uso em pesquisa.
     </p>
   </div>
@@ -859,6 +864,43 @@
 
 <script>
   const images = { img1: null, img2: null, img3: null };
+
+  // Load saved API key on startup
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('fpi_ai_apikey');
+    if (saved) {
+      document.getElementById('apiKey').value = saved;
+      document.getElementById('rememberKey').checked = true;
+      document.getElementById('clearKeyBtn').style.display = 'block';
+    }
+  });
+
+  function onApiKeyInput() {
+    if (document.getElementById('rememberKey').checked) {
+      const val = document.getElementById('apiKey').value.trim();
+      if (val) localStorage.setItem('fpi_ai_apikey', val);
+    }
+  }
+
+  function toggleRemember() {
+    const checked = document.getElementById('rememberKey').checked;
+    const key = document.getElementById('apiKey').value.trim();
+    const clearBtn = document.getElementById('clearKeyBtn');
+    if (checked && key) {
+      localStorage.setItem('fpi_ai_apikey', key);
+      clearBtn.style.display = 'block';
+    } else if (!checked) {
+      localStorage.removeItem('fpi_ai_apikey');
+      clearBtn.style.display = 'none';
+    }
+  }
+
+  function clearSavedKey() {
+    localStorage.removeItem('fpi_ai_apikey');
+    document.getElementById('apiKey').value = '';
+    document.getElementById('rememberKey').checked = false;
+    document.getElementById('clearKeyBtn').style.display = 'none';
+  }
 
   function toggleApiKey() {
     const input = document.getElementById('apiKey');
